@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Job Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f6f4ef;--sf:#fff;--sf2:#efede7;--bd:#dedad1;--bd2:#ccc8be;
+  --tx:#1a1814;--mu:#7a756c;--hi:#aaa49a;
+  --ac:#2a5c45;--acl:#e6f0eb;--acm:#4a8c6a;
+  --wn:#7a4f00;--wnl:#fff3d6;--wnb:#e8c97a;
+  --dn:#7a1f1f;--dnl:#fdeaea;--dnb:#e8a0a0;
+  --in:#1a3d6b;--inl:#e4eef8;--inb:#9bbde0;
+  --pu:#4a2080;--pul:#f0eafa;--pub:#c0a0e8;
+  --r:10px;--rs:6px
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.6}
+header{background:var(--ac);color:#fff;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+header h1{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;flex-shrink:0}
+.hright{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.hmeta{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.07em}
+.htools{display:flex;align-items:center;gap:6px}
+.hbtn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;border:1px solid rgba(255,255,255,0.3);border-radius:4px;padding:3px 8px;cursor:pointer;background:rgba(255,255,255,0.1);color:#fff;transition:all .15s;white-space:nowrap}
+.hbtn:hover{background:rgba(255,255,255,0.25)}
+#syncDot{font-size:10px;white-space:nowrap}
+.main{max-width:900px;margin:0 auto;padding:1.75rem 1.5rem 4rem}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.75rem}
+.stat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:.9rem 1.1rem}
+.snum{font-size:26px;font-weight:300;color:var(--ac);font-family:'DM Serif Display',serif;line-height:1}
+.slbl{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+.apanel{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1.4rem;margin-bottom:1.5rem}
+.ptitle{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:1rem;font-weight:500}
+.urow{display:flex;gap:8px;margin-bottom:10px}
+input,textarea,select{font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--bd);border-radius:var(--rs);padding:8px 11px;background:var(--bg);color:var(--tx);outline:none;transition:border-color .15s;width:100%}
+input:focus,textarea:focus,select:focus{border-color:var(--acm);background:#fff}
+textarea{resize:vertical;min-height:88px}
+button{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--bd);border-radius:var(--rs);padding:8px 14px;cursor:pointer;background:var(--sf);color:var(--tx);transition:all .15s;white-space:nowrap}
+button:hover{background:var(--sf2);border-color:var(--bd2)}
+.primary{background:var(--ac)!important;color:#fff!important;border-color:var(--ac)!important}
+.primary:hover{background:#1f4533!important}
+.sm{padding:5px 10px!important;font-size:12px!important}
+.ghost{background:none!important;border-color:transparent!important;color:var(--mu)!important;padding:4px 8px!important}
+.ghost:hover{background:var(--sf2)!important;color:var(--tx)!important;border-color:var(--bd)!important}
+.ustatus{font-size:12px;padding:8px 12px;border-radius:var(--rs);margin-bottom:10px;display:none;line-height:1.5}
+.ustatus.blk{background:var(--dnl);color:var(--dn);display:block;border:1px solid var(--dnb)}
+.ustatus.ok{background:var(--acl);color:var(--ac);display:block;border:1px solid #a8d4bc}
+.ustatus.ld{background:var(--sf2);color:var(--mu);display:block;border:1px solid var(--bd)}
+.ainote{font-size:12px;color:var(--mu);padding:6px 0;display:none;font-style:italic}
+.brow{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+.tbar{display:flex;gap:8px;margin-bottom:.75rem;align-items:center}
+.tbar input{flex:1}
+.tbar select{width:auto}
+.atoggle{margin-bottom:1rem}
+.atoggle label{font-size:12px;color:var(--mu);cursor:pointer;display:flex;align-items:center;gap:6px}
+.jlist{display:flex;flex-direction:column;gap:10px}
+.asec{margin-top:1.5rem}
+.albl{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--hi);margin-bottom:8px;padding-left:2px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:border-color .15s}
+.card:hover{border-color:var(--bd2)}
+.card.arch{opacity:.6}
+.ctop{padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;cursor:pointer;user-select:none}
+.ctop:hover{background:#fdfcfa}
+.jtitle{font-size:15px;font-weight:500;margin-bottom:2px}
+.jorg{font-size:13px;color:var(--mu)}
+.cmeta{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--bd);color:var(--mu);background:var(--sf2);white-space:nowrap}
+.b-found{background:var(--inl);color:var(--in);border-color:var(--inb)}
+.b-applied{background:var(--wnl);color:var(--wn);border-color:var(--wnb)}
+.b-heard{background:var(--acl);color:var(--ac);border-color:#a8d4bc}
+.b-interviewing{background:var(--pul);color:var(--pu);border-color:var(--pub)}
+.b-closed{background:var(--dnl);color:var(--dn);border-color:var(--dnb)}
+.b-remote{background:#e8f4ff;color:#1a4a7a;border-color:#9ac4e8}
+.b-hybrid{background:#fff8e8;color:#6a4a00;border-color:#e0c870}
+.b-onsite{background:#f0ece8;color:#5a4030;border-color:#c8b8a8}
+.fbadge{font-size:11px;padding:2px 9px;border-radius:20px;border:1px solid;white-space:nowrap;font-weight:500}
+.fs{background:#e6f0eb;color:#2a5c45;border-color:#a8d4bc}
+.fp{background:#e4eef8;color:#1a3d6b;border-color:#9bbde0}
+.fl{background:#fff3d6;color:#7a4f00;border-color:#e8c97a}
+.cacts{display:flex;gap:5px;flex-shrink:0;align-items:flex-start}
+.ib{background:none;border:1px solid var(--bd);border-radius:var(--rs);padding:4px 8px;cursor:pointer;color:var(--mu);font-size:13px;line-height:1;transition:all .15s}
+.ib:hover{background:var(--sf2);color:var(--tx)}
+.ibd:hover{background:var(--dnl)!important;color:var(--dn)!important;border-color:var(--dnb)!important}
+.cdet{border-top:1px solid var(--bd);padding:1.1rem 1.25rem;display:none;background:#fdfcfb}
+.cdet.open{display:block}
+.dgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--mu)}
+.dv{border:none;border-top:1px solid var(--bd);margin:12px 0}
+.shdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.slbl2{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--mu);font-weight:500}
+.jdbox{font-size:12px;color:var(--mu);max-height:240px;overflow-y:auto;line-height:1.75;white-space:pre-wrap;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 12px;display:none;margin-top:6px}
+.jdbox.open{display:block}
+.fitbox{font-size:13px;color:var(--tx);line-height:1.7;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 12px;margin-top:8px}
+.empty{text-align:center;padding:3rem 1rem;color:var(--mu)}
+#importFile{display:none}
+@media(max-width:620px){.stats{grid-template-columns:repeat(2,1fr)}.dgrid{grid-template-columns:1fr 1fr}.htools .hbtn:nth-child(n+2){display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Job Tracker</h1>
+  <div class="hright">
+    <div class="htools">
+      <button class="hbtn" id="btnExportJSON">&#11015; JSON</button>
+      <button class="hbtn" id="btnExportCSV">&#11015; CSV</button>
+      <button class="hbtn" id="btnImport">&#11014; Import</button>
+      <input type="file" id="importFile" accept=".json" />
+      <span id="syncDot" style="font-size:10px;color:rgba(255,255,255,0.5)">&#9679; Connecting...</span>
+    </div>
+    <span class="hmeta">Bruno V. &middot; 2026</span>
+  </div>
+</header>
+
+<div class="main">
+  <div class="stats">
+    <div class="stat"><div class="snum" id="sT">0</div><div class="slbl">Tracked</div></div>
+    <div class="stat"><div class="snum" id="sA">0</div><div class="slbl">Applied</div></div>
+    <div class="stat"><div class="snum" id="sP">0</div><div class="slbl">In progress</div></div>
+    <div class="stat"><div class="snum" id="sR">0</div><div class="slbl">Archived</div></div>
+  </div>
+
+  <div class="apanel">
+    <div class="ptitle">Add a job</div>
+    <div class="urow">
+      <input type="text" id="uIn" placeholder="Paste a job posting URL to try auto-fetching..." style="flex:1" />
+      <button id="btnFetch">Fetch URL</button>
+    </div>
+    <div class="ustatus" id="uSt"></div>
+    <textarea id="dIn" placeholder="Or paste the full job description text here, then click Extract &amp; Add..."></textarea>
+    <div class="ainote" id="aN">Working...</div>
+    <div class="brow">
+      <button class="sm ghost" id="btnClr">Clear</button>
+      <button class="primary" id="btnExtract">Extract &amp; Add</button>
+    </div>
+  </div>
+
+  <div class="tbar">
+    <input type="text" id="qIn" placeholder="Search jobs..." />
+    <select id="fSt">
+      <option value="">All statuses</option>
+      <option value="found">Found</option>
+      <option value="applied">Applied</option>
+      <option value="heard back">Heard back</option>
+      <option value="interviewing">Interviewing</option>
+      <option value="closed">Closed</option>
+    </select>
+    <select id="fAr">
+      <option value="">Any arrangement</option>
+      <option value="Remote">Remote</option>
+      <option value="Hybrid">Hybrid</option>
+      <option value="On-site">On-site</option>
+      <option value="Flexible">Flexible</option>
+    </select>
+  </div>
+  <div class="atoggle">
+    <label><input type="checkbox" id="shA" /> Show archived jobs (no response)</label>
+  </div>
+  <div class="jlist" id="jL"></div>
+</div>
+
+<script>
+const SB_URL = 'https://dsljztnchehhwhhawjlz.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzbGp6dG5jaGVoaHdoaGF3amx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NzkyMjQsImV4cCI6MjA5NjI1NTIyNH0.y_Tkbdod2xJNFOv3oM4AuDtnSpPM9sezhbcRfVF6HPc';
+const SB_HDR = {
+  'Content-Type': 'application/json',
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY
+};
+
+const PROFILE = `CANDIDATE: Bruno J. Vander Velde
+Washington DC | bjv27@cornell.edu | +1 (773) 294-6895
+
+SUMMARY: Strategic communications and content leader with 15+ years experience. Expert at translating complex scientific, technical and policy subject matter into compelling narratives for journalists, policymakers, scientists, and general audiences. Proven track record in brand voice, editorial strategy, executive communications, crisis communications, ESG communications, AI integration into editorial workflows, and revenue-generating content campaigns. Equally strong in mission-driven nonprofit environments and science/research organizations. Deep credibility as both a journalist and a strategic communications executive.
+
+CURRENT ROLE: Managing Director of Storytelling / Managing Director of Content, Conservation International (Jan 2022 - June 2026, 11 years total at CI)
+- Senior strategic leader: organizational content strategy, brand voice, mission-aligned storytelling, team of 8
+- Executive communications for CEO and senior leadership: op-eds, board presentations, keynote speeches, media strategy
+- Crisis communications lead: managed sensitive media inquiries that prevented multiple adverse news stories
+- Led AI tools integration into editorial and communications workflows
+- Led CI communications on nature-based carbon markets: scientifically complex and politically controversial
+- Op-eds placed in New York Times, World Economic Forum, TED, The Hill, Thomson Reuters
+
+PREVIOUS CI ROLES:
+- Senior Communications Director (2018-2021): Amazon wildfires rapid-response: 10x readership spike, $250,000 revenue; ESG communications guidelines adopted by multiple partner organizations
+- Editorial Director (2015-2018): tripled average monthly readership within one year
+
+CIFOR - Center for International Forestry Research, Bogor, Indonesia (2013-2015)
+- Global media relations; placements in WSJ, NYT, Reuters; 150% social media growth; speech for President of Indonesia
+
+IUCN Ecuador (2013); World Food Programme (2012): multimillion-dollar grant proposal writing
+Chicago Tribune (2006-2010): Chief Editor Metro Desk; Foreign/National News Editor
+Chicago Sun-Times (2005-2006); Daily Southtown (2000-2005)
+
+EDUCATION: Cornell University MPA Environmental Policy + International Development (2012); Columbia College Chicago BA Journalism honors (1999)
+SKILLS: Content strategy, brand voice, executive communications, science communications, crisis communications, ESG, media relations, AI integration, editorial leadership, grant writing, Spanish`;
+
+let jobs = JSON.parse(localStorage.getItem('bjvJ4') || '[]');
+let exp = {};
+
+function sv() { localStorage.setItem('bjvJ4', JSON.stringify(jobs)); }
+
+function setSyncStatus(s, msg) {
+  const el = document.getElementById('syncDot');
+  if (!el) return;
+  const colors = { synced: '#a8d4bc', saving: '#fac775', error: '#e8a0a0', offline: '#e8c97a', loading: 'rgba(255,255,255,0.5)' };
+  const labels = { synced: '&#9679; Synced', saving: '&#9679; Saving...', error: '&#9679; '+(msg||'Sync error'), offline: '&#9679; Offline (local only)', loading: '&#9679; Loading...' };
+  el.innerHTML = labels[s] || '&#9679; '+s;
+  el.style.color = colors[s] || 'rgba(255,255,255,0.5)';
+}
+
+async function callClaude(systemPrompt, userMessage) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }]
+    })
+  });
+  if (!r.ok) throw new Error('API error '+r.status);
+  const data = await r.json();
+  return (data.content || []).find(b => b.type === 'text')?.text || '';
+}
+
+async function dbLoad() {
+  setSyncStatus('loading');
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/jobs?select=*&order=updated_at.desc', {headers: SB_HDR});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const rows = await r.json();
+    if (!Array.isArray(rows)) throw new Error('Unexpected response');
+    jobs = rows.map(fromRow);
+    sv();
+    setSyncStatus('synced');
+  } catch(ex) {
+    console.warn('DB load failed, using localStorage:', ex);
+    setSyncStatus('offline');
+  }
+  render();
+}
+
+async function dbUpsert(j) {
+  setSyncStatus('saving');
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/jobs', {
+      method: 'POST',
+      headers: {...SB_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal'},
+      body: JSON.stringify(toRow(j))
+    });
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    setSyncStatus('synced');
+  } catch(ex) {
+    console.warn('Upsert failed:', ex);
+    setSyncStatus('error', 'Save failed');
+  }
+}
+
+async function dbDelete(id) {
+  setSyncStatus('saving');
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/jobs?id=eq.'+id, {method: 'DELETE', headers: SB_HDR});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    setSyncStatus('synced');
+  } catch(ex) {
+    console.warn('Delete failed:', ex);
+    setSyncStatus('error', 'Delete failed');
+  }
+}
+
+function toRow(j) {
+  return {
+    id: j.id, title: j.title||'', org: j.org||'', location: j.location||'',
+    salary: j.salary||'', deadline: j.deadline||'', arrangement: j.arrangement||'',
+    status: j.status||'found', date_added: j.dateAdded||'', date_applied: j.dateApplied||'',
+    contact: j.contact||'', notes: j.notes||'', url: j.url||'',
+    description: j.description||'', archived: j.arch||false,
+    fit_score: j.fit ? j.fit.score : null,
+    fit_summary: j.fit ? j.fit.summary : null,
+    updated_at: new Date().toISOString()
+  };
+}
+
+function fromRow(r) {
+  return {
+    id: r.id, title: r.title||'', org: r.org||'', location: r.location||'',
+    salary: r.salary||'', deadline: r.deadline||'', arrangement: r.arrangement||'',
+    status: r.status||'found', dateAdded: r.date_added||'', dateApplied: r.date_applied||'',
+    contact: r.contact||'', notes: r.notes||'', url: r.url||'',
+    description: r.description||'', arch: r.archived||false,
+    fit: r.fit_score != null ? { score: r.fit_score, summary: r.fit_summary||'' } : null
+  };
+}
+
+function e(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function scl(s) { return {found:'b-found',applied:'b-applied','heard back':'b-heard',interviewing:'b-interviewing',closed:'b-closed'}[s]||''; }
+function acl(a) { return {remote:'b-remote',hybrid:'b-hybrid','on-site':'b-onsite'}[(a||'').toLowerCase()]||''; }
+function fcl(n) { return n>=80?'fs':n>=60?'fp':'fl'; }
+function flb(n) { return n>=80?'Strong fit':n>=60?'Good fit':'Lower fit'; }
+
+function render() {
+  const q = document.getElementById('qIn').value.toLowerCase();
+  const sf = document.getElementById('fSt').value;
+  const af = document.getElementById('fAr').value;
+  const sa = document.getElementById('shA').checked;
+  const el = document.getElementById('jL');
+  const active = jobs.filter(j => {
+    if (j.arch) return false;
+    const t = (j.title+j.org+j.location+(j.notes||'')+(j.contact||'')).toLowerCase();
+    return (!q||t.includes(q)) && (!sf||j.status===sf) && (!af||j.arrangement===af);
+  });
+  const arch = jobs.filter(j => j.arch);
+  document.getElementById('sT').textContent = jobs.filter(j=>!j.arch).length;
+  document.getElementById('sA').textContent = jobs.filter(j=>!j.arch&&['applied','heard back','interviewing'].includes(j.status)).length;
+  document.getElementById('sP').textContent = jobs.filter(j=>!j.arch&&['heard back','interviewing'].includes(j.status)).length;
+  document.getElementById('sR').textContent = arch.length;
+  let h = '';
+  if (!active.length) {
+    h = jobs.filter(j=>!j.arch).length
+      ? '<div class="empty"><p>No jobs match your filters.</p></div>'
+      : '<div class="empty"><p style="font-size:15px;margin-bottom:6px">No jobs tracked yet.</p><p style="font-size:13px">Paste a URL or job description above to get started.</p></div>';
+  } else {
+    h = active.map(j => ch(j)).join('');
+  }
+  if (sa && arch.length) {
+    h += '<div class="asec"><div class="albl">Archived - no response</div>'+arch.map(j=>ch(j,true)).join('')+'</div>';
+  }
+  el.innerHTML = h;
+  attachCardListeners();
+}
+
+function ch(j, ia) {
+  const o = exp[j.id];
+  const arr = j.arrangement||'';
+  return `<div class="card${ia?' arch':''}" id="c-${j.id}">
+<div class="ctop" data-tog="${j.id}">
+  <div style="flex:1;min-width:0">
+    <div class="jtitle">${e(j.title||'Untitled role')}</div>
+    <div class="jorg">${e(j.org||'')}${j.location?' - '+e(j.location):''}</div>
+    <div class="cmeta">
+      <span class="badge ${scl(j.status)}">${e(j.status)}</span>
+      ${arr?`<span class="badge ${acl(arr)}">${e(arr)}</span>`:''}
+      ${j.fit?`<span class="fbadge ${fcl(j.fit.score)}">${flb(j.fit.score)} ${j.fit.score}%</span>`:''}
+      ${j.salary?`<span class="badge">${e(j.salary)}</span>`:''}
+      ${j.deadline?`<span class="badge">Deadline: ${e(j.deadline)}</span>`:''}
+      ${j.dateApplied?`<span class="badge">Applied ${e(j.dateApplied)}</span>`:''}
+    </div>
+  </div>
+  <div class="cacts">
+    ${!ia
+      ? `<button class="ib" data-arch="${j.id}">Archive</button>`
+      : `<button class="ib" data-rest="${j.id}">Restore</button>`}
+    <button class="ib ibd" data-del="${j.id}">X</button>
+  </div>
+</div>
+<div class="cdet ${o?'open':''}" id="d-${j.id}">
+  <div class="dgrid">
+    <div class="field"><label>Status</label>
+      <select data-upd="${j.id}" data-fld="status">
+        ${['found','applied','heard back','interviewing','closed'].map(s=>`<option ${j.status===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label>Arrangement</label>
+      <select data-upd="${j.id}" data-fld="arrangement">
+        <option value="" ${!j.arrangement?'selected':''}>Unknown</option>
+        ${['Remote','Hybrid','On-site','Flexible'].map(a=>`<option ${j.arrangement===a?'selected':''}>${a}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label>Salary range</label>
+      <input type="text" data-upd="${j.id}" data-fld="salary" value="${e(j.salary||'')}" placeholder="e.g. $120-140k" />
+    </div>
+    <div class="field"><label>Date applied</label>
+      <input type="date" data-upd="${j.id}" data-fld="dateApplied" value="${j.dateApplied||''}" />
+    </div>
+    <div class="field"><label>Contact at org</label>
+      <input type="text" data-upd="${j.id}" data-fld="contact" value="${e(j.contact||'')}" placeholder="Name or email" />
+    </div>
+    <div class="field"><label>Link</label>
+      <input type="text" data-upd="${j.id}" data-fld="url" value="${e(j.url||'')}" placeholder="URL" />
+    </div>
+  </div>
+  <div class="field" style="margin-bottom:10px"><label>Notes</label>
+    <textarea data-upd="${j.id}" data-fld="notes" style="min-height:65px">${e(j.notes||'')}</textarea>
+  </div>
+  <hr class="dv" />
+  <div>
+    <div class="shdr">
+      <span class="slbl2">Full job description</span>
+      <div style="display:flex;gap:6px">
+        ${j.description
+          ? `<button class="sm ghost" data-jdtog="${j.id}" id="jb-${j.id}">Show JD</button>
+             <button class="sm ghost" data-dljd="${j.id}">Download .txt</button>`
+          : `<span style="font-size:12px;color:var(--hi);padding:4px 8px">No description saved</span>`}
+      </div>
+    </div>
+    <div class="jdbox" id="jd-${j.id}">${e(j.description||'')}</div>
+  </div>
+  <hr class="dv" />
+  <div>
+    <div class="shdr">
+      <span class="slbl2">AI fit assessment</span>
+      <button class="sm ghost" data-fit="${j.id}">${j.fit?'Re-run':'Run assessment'}</button>
+    </div>
+    <div class="fitbox" id="fb-${j.id}">
+      ${j.fit
+        ? `<strong>${flb(j.fit.score)} (${j.fit.score}%)</strong><br/><br/>${e(j.fit.summary)}`
+        : `<span style="color:var(--hi);font-style:italic">Click Run assessment to assess fit against this role.</span>`}
+    </div>
+  </div>
+</div>
+</div>`;
+}
+
+function attachCardListeners() {
+  document.querySelectorAll('[data-tog]').forEach(el => {
+    el.addEventListener('click', function(ev) {
+      if (ev.target.closest('[data-arch],[data-rest],[data-del]')) return;
+      const id = this.dataset.tog;
+      exp[id] = !exp[id];
+      const det = document.getElementById('d-'+id);
+      if (det) det.className = 'cdet'+(exp[id]?' open':'');
+    });
+  });
+  document.querySelectorAll('[data-arch]').forEach(el => {
+    el.addEventListener('click', function() {
+      const j = jobs.find(x=>x.id===this.dataset.arch);
+      if (j) { j.arch=true; sv(); dbUpsert(j); render(); }
+    });
+  });
+  document.querySelectorAll('[data-rest]').forEach(el => {
+    el.addEventListener('click', function() {
+      const j = jobs.find(x=>x.id===this.dataset.rest);
+      if (j) { j.arch=false; sv(); dbUpsert(j); render(); }
+    });
+  });
+  document.querySelectorAll('[data-del]').forEach(el => {
+    el.addEventListener('click', function() {
+      if (!confirm('Permanently delete this job?')) return;
+      const id = this.dataset.del;
+      jobs = jobs.filter(x=>x.id!==id);
+      sv(); dbDelete(id); render();
+    });
+  });
+  document.querySelectorAll('[data-upd]').forEach(el => {
+    el.addEventListener('change', function() {
+      const j = jobs.find(x=>x.id===this.dataset.upd);
+      if (j) { j[this.dataset.fld]=this.value; sv(); dbUpsert(j); }
+    });
+  });
+  document.querySelectorAll('[data-jdtog]').forEach(el => {
+    el.addEventListener('click', function() {
+      const id = this.dataset.jdtog;
+      const box = document.getElementById('jd-'+id);
+      const btn = document.getElementById('jb-'+id);
+      if (!box) return;
+      const open = box.classList.contains('open');
+      box.classList.toggle('open', !open);
+      if (btn) btn.textContent = open ? 'Show JD' : 'Hide JD';
+    });
+  });
+  document.querySelectorAll('[data-dljd]').forEach(el => {
+    el.addEventListener('click', function() {
+      const j = jobs.find(x=>x.id===this.dataset.dljd);
+      if (!j||!j.description) { alert('No description saved.'); return; }
+      const nm = ((j.org||'org')+' - '+(j.title||'role')).replace(/[^a-zA-Z0-9 \-]/g,'').replace(/\s+/g,'_');
+      try {
+        const blob = new Blob([(j.title||'')+' at '+(j.org||'')+'\n'+'='.repeat(50)+'\n\n'+j.description], {type:'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href=url; a.download='JD_'+nm+'.txt';
+        document.body.appendChild(a); a.click();
+        setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},100);
+      } catch(ex) { alert('Download failed: '+ex.message); }
+    });
+  });
+  document.querySelectorAll('[data-fit]').forEach(el => {
+    el.addEventListener('click', async function() {
+      const id = this.dataset.fit;
+      const j = jobs.find(x=>x.id===id);
+      if (!j||!j.description) { alert('No job description saved for this role.'); return; }
+      const elFit = document.getElementById('fb-'+id);
+      elFit.innerHTML = '<span style="color:var(--mu);font-style:italic">Running AI fit assessment...</span>';
+      try {
+        const text = await callClaude(
+          'Assess candidate-job fit. Return ONLY valid JSON with no markdown: {"score":<integer 0-100>,"summary":"<4-5 sentences: (1) overall fit and why, (2) 2-3 strongest matching strengths, (3) any notable gaps or reframing needed, (4) which specific background aspects are most worth highlighting>"}',
+          'Candidate profile:\n'+PROFILE+'\n\nJob description:\n'+j.description.substring(0,3000)+'\n\nAssess fit.'
+        );
+        let res = {score:0, summary:'Could not parse result.'};
+        try { res = {...res, ...JSON.parse(text.replace(/```json|```/g,'').trim())}; } catch(pe) {}
+        j.fit = {score:res.score, summary:res.summary};
+        sv(); dbUpsert(j); render();
+        exp[id] = true;
+        const det = document.getElementById('d-'+id);
+        if (det) det.className = 'cdet open';
+      } catch(ex) { elFit.innerHTML = 'Assessment failed. Please try again.'; console.error(ex); }
+    });
+  });
+}
+
+async function doFetch() {
+  const url = document.getElementById('uIn').value.trim();
+  if (!url) return;
+  const st = document.getElementById('uSt');
+  st.className='ustatus ld'; st.textContent='Fetching page...';
+  try {
+    const r = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url), {signal:AbortSignal.timeout(9000)});
+    const d = await r.json();
+    if (!d.contents||d.contents.length<150) throw new Error('blocked');
+    const t = d.contents
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'')
+      .replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,5000);
+    document.getElementById('dIn').value = t;
+    st.className='ustatus ok'; st.textContent='Page fetched. Review text below then click Extract & Add.';
+  } catch(ex) {
+    st.className='ustatus blk';
+    st.textContent='This site blocks automated fetching. Please copy and paste the job description text directly into the box below.';
+    document.getElementById('dIn').focus();
+  }
+}
+
+async function doExtract() {
+  const desc = document.getElementById('dIn').value.trim();
+  const url = document.getElementById('uIn').value.trim();
+  if (!desc) { alert('Please paste a job description first.'); return; }
+  const an = document.getElementById('aN');
+  an.style.display='block'; an.textContent='Extracting details with AI...';
+  try {
+    const text = await callClaude(
+      'Extract job posting details. Return ONLY a valid JSON object, no markdown, no backticks, no preamble. Keys: title, org, location, salary (range as text or empty), deadline (date as text or empty), arrangement (one of: Remote, Hybrid, On-site, Flexible, or empty string).',
+      'Extract from this job posting:\n\n'+desc.substring(0,3500)
+    );
+    let ex = {title:'',org:'',location:'',salary:'',deadline:'',arrangement:''};
+    try { ex = {...ex, ...JSON.parse(text.replace(/```json|```/g,'').trim())}; } catch(pe) {}
+    const job = {
+      id: Date.now().toString(),
+      title:ex.title||'', org:ex.org||'', location:ex.location||'',
+      salary:ex.salary||'', deadline:ex.deadline||'', arrangement:ex.arrangement||'',
+      status:'found',
+      dateAdded:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+      dateApplied:'', contact:'', notes:'', url:url, description:desc, arch:false, fit:null
+    };
+    jobs.unshift(job); sv();
+    an.textContent='Saving to database...';
+    await dbUpsert(job);
+    document.getElementById('uIn').value='';
+    document.getElementById('dIn').value='';
+    const st=document.getElementById('uSt'); st.className='ustatus'; st.textContent='';
+    exp[job.id]=false; render();
+  } catch(ex) { alert('Something went wrong. Please try again.'); console.error(ex); }
+  an.style.display='none';
+}
+
+function doExportJSON() {
+  const ts = new Date().toISOString().slice(0,10);
+  try {
+    const blob = new Blob([JSON.stringify(jobs,null,2)], {type:'application/json;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='JobTracker_'+ts+'.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},100);
+  } catch(ex) { alert('Export failed: '+ex.message); }
+}
+
+function doExportCSV() {
+  const cols = ['Title','Org','Location','Arrangement','Salary','Status','Date Added','Date Applied','Fit Score','Contact','Notes','Link'];
+  const q2 = v => '"'+String(v||'').replace(/"/g,'""')+'"';
+  const rows = [cols.map(q2).join(',')];
+  jobs.forEach(j => {
+    rows.push([j.title,j.org,j.location,j.arrangement,j.salary,j.status,j.dateAdded,j.dateApplied,j.fit?j.fit.score:'',j.contact,j.notes,j.url].map(q2).join(','));
+  });
+  const ts = new Date().toISOString().slice(0,10);
+  try {
+    const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='JobTracker_'+ts+'.csv';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},100);
+  } catch(ex) { alert('CSV export failed: '+ex.message); }
+}
+
+function doImport(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!Array.isArray(imported)) throw new Error('Invalid format.');
+      if (!confirm('Merge '+imported.length+' imported jobs with your '+jobs.length+' existing jobs? Duplicates will be skipped.')) return;
+      const existingIds = new Set(jobs.map(j=>j.id));
+      const newJobs = imported.filter(j=>j.id&&!existingIds.has(j.id));
+      jobs = [...jobs, ...newJobs];
+      sv(); render();
+      newJobs.forEach(j => dbUpsert(j));
+      alert('Import complete. Added '+newJobs.length+' new jobs ('+(imported.length-newJobs.length)+' duplicates skipped).');
+    } catch(ex) { alert('Import failed: '+ex.message); }
+  };
+  reader.readAsText(file);
+  evt.target.value='';
+}
+
+document.getElementById('btnFetch').addEventListener('click', doFetch);
+document.getElementById('btnExtract').addEventListener('click', doExtract);
+document.getElementById('btnClr').addEventListener('click', function() {
+  document.getElementById('uIn').value='';
+  document.getElementById('dIn').value='';
+  const st=document.getElementById('uSt'); st.className='ustatus'; st.textContent='';
+});
+document.getElementById('btnExportJSON').addEventListener('click', doExportJSON);
+document.getElementById('btnExportCSV').addEventListener('click', doExportCSV);
+document.getElementById('btnImport').addEventListener('click', function() { document.getElementById('importFile').click(); });
+document.getElementById('importFile').addEventListener('change', doImport);
+document.getElementById('qIn').addEventListener('input', render);
+document.getElementById('fSt').addEventListener('change', render);
+document.getElementById('fAr').addEventListener('change', render);
+document.getElementById('shA').addEventListener('change', render);
+
+dbLoad();
+</script>
+</body>
+</html>
