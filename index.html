@@ -40,18 +40,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);font-
 .rpanel{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);flex:1;min-width:0;position:relative}
 
 /* DIVIDER */
-.divider{width:5px;background:var(--bd);cursor:col-resize;flex-shrink:0;position:relative;z-index:10;transition:background .15s;display:flex;align-items:center;justify-content:center}
-.divider:hover,.divider.dragging{background:var(--acm)}
-.divider::after{content:'';width:1px;height:32px;background:currentColor;opacity:.3;border-radius:1px}
+.divider{width:20px;background:var(--bg);cursor:col-resize;flex-shrink:0;position:relative;z-index:10;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.divider:hover{background:var(--sf2)}
+.divider::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--bd);transform:translateX(-50%)}
 
 /* COLLAPSE HANDLES */
-.collapse-handle{position:absolute;top:50%;transform:translateY(-50%);width:16px;height:48px;background:var(--bd);border-radius:0 6px 6px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:15;transition:all .15s;font-size:11px;color:var(--mu)}
-.collapse-handle:hover{background:var(--acm);color:#fff}
-.lpanel .collapse-handle{right:-16px;border-radius:0 6px 6px 0}
-.rpanel .collapse-handle{left:0;border-radius:6px 0 0 6px}
-.lpanel.collapsed{width:0!important;overflow:hidden}
-.rpanel.collapsed{width:0!important;overflow:hidden;flex:0}
-.lpanel.collapsed .collapse-handle{right:-16px;border-radius:0 6px 6px 0}
+.col-handle{position:absolute;top:50%;transform:translateY(-50%);width:16px;height:48px;background:var(--bd2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:30;transition:all .15s;font-size:12px;color:var(--mu);user-select:none}
+.col-handle:hover{background:var(--acm);color:#fff}
+#lHandle{border-radius:0 5px 5px 0}
+#rHandle{border-radius:5px 0 0 5px}
 
 /* PANEL HEADERS */
 .lp-hdr{padding:.85rem 1.1rem .7rem;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;gap:8px;flex-shrink:0}
@@ -154,7 +151,6 @@ button:hover{background:var(--sf2);border-color:var(--bd2)}
 
 <div class="workspace" id="workspace">
   <div class="lpanel" id="lpanel">
-    <div class="collapse-handle" id="lColHandle" title="Collapse panel">&#8249;</div>
     <div id="lpContent" style="display:flex;flex-direction:column;height:100%">
       <div class="lp-empty">
         <div class="big">Select a job</div>
@@ -163,10 +159,11 @@ button:hover{background:var(--sf2);border-color:var(--bd2)}
     </div>
   </div>
 
-  <div class="divider" id="divider"></div>
+  <div class="divider" id="divider">
+    <div class="col-handle" id="lHandle" title="Collapse left panel">&#8249;</div>
+  </div>
 
   <div class="rpanel" id="rpanel">
-    <div class="collapse-handle" id="rColHandle" title="Collapse list" style="border-radius:6px 0 0 6px;left:0">&#8250;</div>
     <div class="rp-filters">
       <input type="text" id="qIn" placeholder="Search..." />
       <select id="fSt">
@@ -463,50 +460,55 @@ function exportCSV(){
 const lpanel=document.getElementById('lpanel');
 const rpanel=document.getElementById('rpanel');
 const divider=document.getElementById('divider');
-const lch=document.getElementById('lColHandle');
-const rch=document.getElementById('rColHandle');
-let lpCollapsed=false, rpCollapsed=false;
-
-function collapseLp(){
-  lpCollapsed=!lpCollapsed;
-  if(lpCollapsed){lpanel.style.width='0';lpanel.style.overflow='hidden';lch.innerHTML='&#8250;';lch.style.right='-16px';}
-  else{lpanel.style.width=currentLW+'px';lpanel.style.overflow='';lch.innerHTML='&#8249;';}
-}
-function collapseRp(){
-  rpCollapsed=!rpCollapsed;
-  if(rpCollapsed){rpanel.style.flex='0';rpanel.style.width='0';rpanel.style.overflow='hidden';rch.innerHTML='&#8249;';rch.style.left='0';}
-  else{rpanel.style.flex='1';rpanel.style.width='';rpanel.style.overflow='';rch.innerHTML='&#8250;';}
-}
-lch.addEventListener('click',collapseLp);
-rch.addEventListener('click',collapseRp);
-
-// DRAG DIVIDER
-let dragging=false, startX=0, startW=0;
+const lHandle=document.getElementById('lHandle');
+let lpCollapsed=false;
 let currentLW=420;
 lpanel.style.width=currentLW+'px';
 lpanel.style.flexShrink='0';
 
+function updateHandle(){
+  lHandle.innerHTML=lpCollapsed?'&#8250;':'&#8249;';
+  lHandle.title=lpCollapsed?'Expand detail panel':'Collapse detail panel';
+}
+
+lHandle.addEventListener('click',ev=>{
+  ev.stopPropagation();
+  lpCollapsed=!lpCollapsed;
+  if(lpCollapsed){
+    lpanel.style.width='0';
+    lpanel.style.overflow='hidden';
+  }else{
+    lpanel.style.width=currentLW+'px';
+    lpanel.style.overflow='';
+  }
+  updateHandle();
+});
+
+// DRAG DIVIDER
+let dragging=false, startX=0, startW=0;
+
 divider.addEventListener('mousedown',ev=>{
+  if(ev.target===lHandle)return;
   dragging=true;startX=ev.clientX;startW=lpanel.offsetWidth;
-  divider.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+  document.body.style.cursor='col-resize';document.body.style.userSelect='none';
 });
 document.addEventListener('mousemove',ev=>{
   if(!dragging)return;
-  const nw=Math.max(220,Math.min(startW+(ev.clientX-startX),window.innerWidth-200));
+  const nw=Math.max(200,Math.min(startW+(ev.clientX-startX),window.innerWidth-200));
   currentLW=nw;lpanel.style.width=nw+'px';
+  if(lpCollapsed){lpCollapsed=false;lpanel.style.overflow='';updateHandle();}
 });
 document.addEventListener('mouseup',()=>{
   if(!dragging)return;dragging=false;
-  divider.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';
+  document.body.style.cursor='';document.body.style.userSelect='';
 });
-
-// TOUCH DRAG
 divider.addEventListener('touchstart',ev=>{
+  if(ev.target===lHandle)return;
   dragging=true;startX=ev.touches[0].clientX;startW=lpanel.offsetWidth;
 },{passive:true});
 document.addEventListener('touchmove',ev=>{
   if(!dragging)return;
-  const nw=Math.max(220,Math.min(startW+(ev.touches[0].clientX-startX),window.innerWidth-200));
+  const nw=Math.max(200,Math.min(startW+(ev.touches[0].clientX-startX),window.innerWidth-200));
   currentLW=nw;lpanel.style.width=nw+'px';
 },{passive:true});
 document.addEventListener('touchend',()=>{dragging=false;});
