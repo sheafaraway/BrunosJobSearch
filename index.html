@@ -214,7 +214,7 @@ async function dbLoad(){
     setSS('synced');
   }catch(ex){console.warn('DB load failed:',ex);setSS('offline');}
   renderList();
-  showNew();
+  setTimeout(showNew, 50);
 }
 async function dbUpsert(j){
   setSS('saving');
@@ -426,7 +426,9 @@ function renderDetail(){
     j.status=document.getElementById('fStatus').value;
     j.arrangement=document.getElementById('fArr').value;
     j.salary=document.getElementById('fSal').value;
-    j.dateApplied=document.getElementById('fDA').value;
+    const da=document.getElementById('fDA').value;
+    if(da&&!j.dateApplied&&j.status==='found'){j.status='applied';document.getElementById('fStatus').value='applied';}
+    j.dateApplied=da;
     const fv=document.getElementById('fFit').value;
     j.fitScore=fv!==''?parseInt(fv):null;
     j.contact=document.getElementById('fCon').value;
