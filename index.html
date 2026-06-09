@@ -71,7 +71,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);font-
 .jcard.active{border-color:var(--acm);background:var(--acl)}
 .jcard.arch{opacity:.5}
 .jc-title{font-size:13px;font-weight:500;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.jc-org{font-size:11px;color:var(--mu);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jc-org{font-size:12px;font-weight:500;color:var(--tx);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .jc-meta{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
 
 /* BADGES */
@@ -389,7 +389,13 @@ function renderDetail(){
     <div class="field"><label>Deadline</label><input type="date" id="fDl" value="${j.deadline||''}" /></div>
   </div>
   <div class="field-row full" style="margin-bottom:0">
-    <div class="field"><label>Link</label><input type="text" id="fUrl" value="${e(j.url||'')}" placeholder="Job posting URL" /></div>
+    <div class="field">
+      <label>Link</label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="text" id="fUrl" value="${e(j.url||'')}" placeholder="Job posting URL" style="flex:1" />
+        ${j.url?`<button class="btn-sm btn-g" id="bOpen" style="flex-shrink:0">Open &#8599;</button>`:''}
+      </div>
+    </div>
   </div>
   <hr class="dv" />
   <div class="field-row full" style="margin-bottom:0">
@@ -407,38 +413,57 @@ function renderDetail(){
     ?`<textarea id="fJD" style="width:100%;margin-top:6px;font-family:'DM Sans',sans-serif;font-size:12px;min-height:180px;resize:vertical;border:1px solid var(--acm);border-radius:var(--rs);padding:9px 11px;background:#fff;color:var(--tx);outline:none;line-height:1.75">${e(j.description||'')}</textarea>`
     :`<div class="jd-box">${j.description?e(j.description):'<span style="color:var(--hi);font-style:italic">No description saved. Click Edit JD to add one.</span>'}</div>`
   }
-  <div style="display:flex;justify-content:flex-end;margin-top:10px">
-    <button class="btn-p" id="bSave">Save changes</button>
-  </div>
 </div>`;
+
+  // Auto-save helpers
+  function saveField(field, val){
+    j[field]=val;
+    dbUpsert(j);renderList();
+  }
 
   document.getElementById('bArch').addEventListener('click',()=>{j.arch=!j.arch;dbUpsert(j);renderList();renderDetail();});
   document.getElementById('bDel').addEventListener('click',()=>{
     if(!confirm('Permanently delete this job?'))return;
     jobs=jobs.filter(x=>x.id!==j.id);dbDel(j.id);selectedId=null;renderList();renderDetail();
   });
+
+  // Dropdowns — save on change immediately
+  document.getElementById('fStatus').addEventListener('change',function(){saveField('status',this.value);});
+  document.getElementById('fArr').addEventListener('change',function(){saveField('arrangement',this.value);});
+
+  // Text/date fields — save on blur
+  document.getElementById('fSal').addEventListener('blur',function(){saveField('salary',this.value);});
+  document.getElementById('fDA').addEventListener('blur',function(){
+    const da=this.value;
+    if(da&&!j.dateApplied&&j.status==='found'){
+      j.status='applied';
+      document.getElementById('fStatus').value='applied';
+    }
+    saveField('dateApplied',da);
+  });
+  document.getElementById('fFit').addEventListener('blur',function(){
+    saveField('fitScore',this.value!==''?parseInt(this.value):null);
+  });
+  document.getElementById('fCon').addEventListener('blur',function(){saveField('contact',this.value);});
+  document.getElementById('fDl').addEventListener('blur',function(){saveField('deadline',this.value);});
+  document.getElementById('fUrl').addEventListener('blur',function(){
+    saveField('url',this.value);
+    // refresh to show/hide open button
+    renderDetail();
+  });
+  document.getElementById('fNotes').addEventListener('blur',function(){saveField('notes',this.value);});
+
+  const bOpen=document.getElementById('bOpen');
+  if(bOpen)bOpen.addEventListener('click',()=>{ if(j.url)window.open(j.url,'_blank'); });
+
   document.getElementById('bEditJD').addEventListener('click',()=>{jdEdit=!jdEdit;renderDetail();});
   const bc=document.getElementById('bCopy');
   if(bc)bc.addEventListener('click',()=>{
     navigator.clipboard.writeText(j.description||'').then(()=>{bc.textContent='Copied!';setTimeout(()=>bc.textContent='Copy',1500);}).catch(()=>alert('Select and copy manually.'));
   });
-  document.getElementById('bSave').addEventListener('click',()=>{
-    j.status=document.getElementById('fStatus').value;
-    j.arrangement=document.getElementById('fArr').value;
-    j.salary=document.getElementById('fSal').value;
-    const da=document.getElementById('fDA').value;
-    if(da&&!j.dateApplied&&j.status==='found'){j.status='applied';document.getElementById('fStatus').value='applied';}
-    j.dateApplied=da;
-    const fv=document.getElementById('fFit').value;
-    j.fitScore=fv!==''?parseInt(fv):null;
-    j.contact=document.getElementById('fCon').value;
-    j.deadline=document.getElementById('fDl').value;
-    j.url=document.getElementById('fUrl').value;
-    j.notes=document.getElementById('fNotes').value;
-    if(jdEdit)j.description=document.getElementById('fJD').value;
-    jdEdit=false;
-    dbUpsert(j);renderList();renderDetail();
-  });
+  if(jdEdit){
+    document.getElementById('fJD').addEventListener('blur',function(){saveField('description',this.value);});
+  }
 }
 
 // NEW JOB FORM
@@ -522,7 +547,7 @@ const rpanel=document.getElementById('rpanel');
 const divider=document.getElementById('divider');
 const lHandle=document.getElementById('lHandle');
 let lpCollapsed=false;
-let currentLW=420;
+let currentLW=Math.round(window.innerWidth*0.65);
 lpanel.style.width=currentLW+'px';
 lpanel.style.flexShrink='0';
 
