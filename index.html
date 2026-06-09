@@ -232,10 +232,10 @@ async function dbDel(id){
   }catch(ex){setSS('error');console.warn(ex);}
 }
 function toRow(j){
-  return{id:j.id,title:j.title||'',org:j.org||'',location:j.location||'',salary:j.salary||'',deadline:j.deadline||'',arrangement:j.arrangement||'',status:j.status||'found',date_added:j.dateAdded||'',date_applied:j.dateApplied||'',contact:j.contact||'',notes:j.notes||'',url:j.url||'',description:j.description||'',archived:j.arch||false,fit_score:j.fitScore!=null?j.fitScore:null,updated_at:new Date().toISOString()};
+  return{id:j.id,title:j.title||'',org:j.org||'',location:j.location||'',salary:j.salary||'',deadline:j.deadline||'',arrangement:j.arrangement||'',status:j.status||'found',date_added:j.dateAdded||'',date_applied:j.dateApplied||'',contact:j.contact||'',notes:j.notes||'',url:j.url||'',description:j.description||'',archived:j.arch||false,fit_score:j.fitScore!=null?j.fitScore:null,fit_cv:j.fitEmoji||null,updated_at:new Date().toISOString()};
 }
 function fromRow(r){
-  return{id:r.id,title:r.title||'',org:r.org||'',location:r.location||'',salary:r.salary||'',deadline:r.deadline||'',arrangement:r.arrangement||'',status:r.status||'found',dateAdded:r.date_added||'',dateApplied:r.date_applied||'',contact:r.contact||'',notes:r.notes||'',url:r.url||'',description:r.description||'',arch:r.archived||false,fitScore:r.fit_score!=null?r.fit_score:null};
+  return{id:r.id,title:r.title||'',org:r.org||'',location:r.location||'',salary:r.salary||'',deadline:r.deadline||'',arrangement:r.arrangement||'',status:r.status||'found',dateAdded:r.date_added||'',dateApplied:r.date_applied||'',contact:r.contact||'',notes:r.notes||'',url:r.url||'',description:r.description||'',arch:r.archived||false,fitScore:r.fit_score!=null?r.fit_score:null,fitEmoji:r.fit_cv||null};
 }
 
 // SYNC STATUS
