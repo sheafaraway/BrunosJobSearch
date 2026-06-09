@@ -214,6 +214,7 @@ async function dbLoad(){
     setSS('synced');
   }catch(ex){console.warn('DB load failed:',ex);setSS('offline');}
   renderList();
+  showNew();
 }
 async function dbUpsert(j){
   setSS('saving');
@@ -317,7 +318,10 @@ function renderList(){
   el.querySelectorAll('[data-jid]').forEach(c=>{
     c.addEventListener('click',()=>{
       selectedId=c.dataset.jid;jdEdit=false;
-      if(lpCollapsed){lpCollapsed=false;lpanel.style.width=currentLW+'px';lpanel.style.overflow='';updateHandle();}
+      lpCollapsed=false;
+      lpanel.style.width=currentLW+'px';
+      lpanel.style.overflow='';
+      updateHandle();
       renderDetail();renderList();
     });
   });
@@ -325,7 +329,8 @@ function renderList(){
 
 function jcH(j,ia){
   const arr=j.arrangement||'';
-  const showDate=['applied','heard back','interviewing'].includes(j.status)&&j.dateApplied;
+  const notYetApplied=j.status==='found';
+  const hasApplied=['applied','heard back','interviewing'].includes(j.status);
   const dlCls=dlClass(j.deadline);
   return`<div class="jcard${ia?' arch':''}${j.id===selectedId?' active':''}" data-jid="${j.id}">
 <div class="jc-title">${e(j.title||'Untitled role')}</div>
@@ -335,8 +340,8 @@ function jcH(j,ia){
   ${arr?`<span class="badge ${acl(arr)}">${e(arr)}</span>`:''}
   ${j.fitScore!=null?`<span class="fit-badge ${fcl(j.fitScore)}">${j.fitScore}%</span>`:''}
   ${j.salary?`<span class="badge">${e(j.salary)}</span>`:''}
-  ${showDate?`<span class="badge">Applied ${e(j.dateApplied)}</span>`:''}
-  ${j.deadline?`<span class="badge ${dlCls}">Due ${e(j.deadline)}</span>`:''}
+  ${hasApplied&&j.dateApplied?`<span class="badge">Applied ${e(j.dateApplied)}</span>`:''}
+  ${notYetApplied&&j.deadline?`<span class="badge ${dlCls}">Due ${e(j.deadline)}</span>`:''}
 </div>
 </div>`;}
 
@@ -381,7 +386,7 @@ function renderDetail(){
   </div>
   <div class="field-row">
     <div class="field"><label>Contact</label><input type="text" id="fCon" value="${e(j.contact||'')}" placeholder="Name or email" /></div>
-    <div class="field"><label>Deadline</label><input type="text" id="fDl" value="${e(j.deadline||'')}" placeholder="e.g. June 30" /></div>
+    <div class="field"><label>Deadline</label><input type="date" id="fDl" value="${j.deadline||''}" /></div>
   </div>
   <div class="field-row full" style="margin-bottom:0">
     <div class="field"><label>Link</label><input type="text" id="fUrl" value="${e(j.url||'')}" placeholder="Job posting URL" /></div>
@@ -458,7 +463,7 @@ function showNew(){
   </div>
   <div class="field-row three">
     <div class="field"><label>Salary</label><input type="text" id="nSal" placeholder="e.g. $120–140k" /></div>
-    <div class="field"><label>Deadline</label><input type="text" id="nDl" placeholder="e.g. June 30" /></div>
+    <div class="field"><label>Deadline</label><input type="date" id="nDl" /></div>
     <div class="field"><label>Link</label><input type="text" id="nUrl" placeholder="URL" /></div>
   </div>
   <div class="field-row full"><div class="field"><label>Notes</label><textarea id="nN" style="min-height:60px"></textarea></div></div>
