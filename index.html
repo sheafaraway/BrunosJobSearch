@@ -439,9 +439,6 @@ function renderDetail(){
   }
 </div>`;
 
-  document.getElementById('fTitle').addEventListener('blur',function(){
-    j.title=this.value;dbUpsert(j);renderList();
-  });
   document.getElementById('fTitle').addEventListener('focus',function(){
     this.style.borderBottomColor='var(--acm)';this.style.background='#fff';
   });
@@ -515,7 +512,6 @@ function renderDetail(){
   if(jdEdit){
     document.getElementById('fJD').addEventListener('blur',function(){saveField('description',this.value);});
   }
-}
 
 // NEW JOB FORM
 function showNew(){
