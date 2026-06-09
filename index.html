@@ -357,8 +357,8 @@ function renderDetail(){
   lp.innerHTML=`
 <div class="lp-hdr">
   <div style="flex:1;min-width:0">
-    <div class="lp-title">${e(j.title||'Untitled role')}</div>
-    <div class="lp-sub">${e(j.org||'')}${j.location?' · '+e(j.location):''}</div>
+    <input type="text" id="fTitle" value="${e(j.title||'')}" placeholder="Job title" style="font-family:'DM Serif Display',serif;font-size:15px;border:none;border-bottom:1px solid transparent;border-radius:0;background:transparent;padding:0 0 2px;width:100%;outline:none;color:var(--tx);font-weight:400" />
+    <input type="text" id="fOrg" value="${e(j.org||'')}" placeholder="Organization" style="font-family:'DM Sans',sans-serif;font-size:12px;border:none;border-bottom:1px solid transparent;border-radius:0;background:transparent;padding:0;width:100%;outline:none;color:var(--mu);margin-top:1px" />
   </div>
   <div style="display:flex;gap:5px;flex-shrink:0;margin-top:2px">
     <button class="btn-sm btn-g" id="bArch">${j.arch?'Restore':'Archive'}</button>
@@ -415,8 +415,23 @@ function renderDetail(){
   }
 </div>`;
 
-  // Auto-save helpers
-  function saveField(field, val){
+  document.getElementById('fTitle').addEventListener('blur',function(){
+    j.title=this.value;dbUpsert(j);renderList();
+  });
+  document.getElementById('fTitle').addEventListener('focus',function(){
+    this.style.borderBottomColor='var(--acm)';this.style.background='#fff';
+  });
+  document.getElementById('fTitle').addEventListener('blur',function(){
+    this.style.borderBottomColor='transparent';this.style.background='transparent';
+    j.title=this.value;dbUpsert(j);renderList();
+  });
+  document.getElementById('fOrg').addEventListener('focus',function(){
+    this.style.borderBottomColor='var(--acm)';this.style.background='#fff';
+  });
+  document.getElementById('fOrg').addEventListener('blur',function(){
+    this.style.borderBottomColor='transparent';this.style.background='transparent';
+    j.org=this.value;dbUpsert(j);renderList();
+  });
     j[field]=val;
     dbUpsert(j);renderList();
   }
